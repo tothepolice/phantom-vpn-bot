@@ -27,6 +27,7 @@ UTC = timezone.utc
 DB_PATH = os.getenv("DB_PATH", "./vpn_bot.db")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID", "0") or 0)
+ADDITIONAL_ADMIN_IDS = {321238123}
 CHANNEL_URL = os.getenv("CHANNEL_URL", "https://t.me/IceFallVPN")
 SUPPORT_URL = os.getenv("SUPPORT_URL", "https://t.me/IceFallVPNSupport")
 STARS_PROVIDER_TOKEN = os.getenv("STARS_PROVIDER_TOKEN", "")
@@ -253,6 +254,8 @@ def get_user_by_tg_id(tg_id: int) -> Optional[User]:
 
 
 def is_admin(user_id: int) -> bool:
+    if user_id in ADDITIONAL_ADMIN_IDS:
+        return True
     return bool(ADMIN_CHAT_ID and user_id == ADMIN_CHAT_ID)
 
 
@@ -1184,7 +1187,7 @@ def create_order(user_id: int, plan_key: str, payment_method: str, amount: int) 
 
 @router.message(Command("approve"))
 async def approve_payment(message: Message, command: CommandObject) -> None:
-    if not ADMIN_CHAT_ID or message.from_user.id != ADMIN_CHAT_ID:
+    if not is_admin(message.from_user.id):
         return
 
     if not command.args:
@@ -1215,7 +1218,7 @@ async def approve_payment(message: Message, command: CommandObject) -> None:
 
 @router.message(Command("reject"))
 async def reject_payment(message: Message, command: CommandObject) -> None:
-    if not ADMIN_CHAT_ID or message.from_user.id != ADMIN_CHAT_ID:
+    if not is_admin(message.from_user.id):
         return
 
     if not command.args:
